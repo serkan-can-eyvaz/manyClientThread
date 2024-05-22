@@ -12,6 +12,8 @@ public class Client2 extends JFrame {
     private JTextField ipField;
     private JTextField portField;
     private JTextField usernameField;
+    private JButton connectButton;
+    private JButton disconnectButton;
 
     public Client2() {
         setTitle("Client 2");
@@ -32,15 +34,17 @@ public class Client2 extends JFrame {
         sendButton.addActionListener(e -> sendMessage());
         add(sendButton, BorderLayout.EAST);
 
-        JPanel connectionPanel = new JPanel(new GridLayout(3, 2)); // Satır sayısını artırdık
+        JPanel connectionPanel = new JPanel(new GridLayout(4, 2)); // Satır sayısını artırdık
         JLabel ipLabel = new JLabel("Server IP:");
         ipField = new JTextField("localhost");
         JLabel portLabel = new JLabel("Port:");
         portField = new JTextField("12345");
         JLabel usernameLabel = new JLabel("Username:");
         usernameField = new JTextField();
-        JButton connectButton = new JButton("Connect");
+        connectButton = new JButton("Connect");
         connectButton.addActionListener(e -> connectToServer());
+        disconnectButton = new JButton("Disconnect");
+        disconnectButton.addActionListener(e -> disconnectFromServer());
         connectionPanel.add(ipLabel);
         connectionPanel.add(ipField);
         connectionPanel.add(portLabel);
@@ -48,6 +52,7 @@ public class Client2 extends JFrame {
         connectionPanel.add(usernameLabel);
         connectionPanel.add(usernameField);
         connectionPanel.add(connectButton); // Connect butonunu panel'e ekle
+        connectionPanel.add(disconnectButton); // Disconnect butonunu panel'e ekle
         add(connectionPanel, BorderLayout.NORTH);
     }
 
@@ -86,6 +91,18 @@ public class Client2 extends JFrame {
             readThread.start();
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Bağlantı hatası! Sunucuya bağlanılamadı.", "Hata", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
+    private void disconnectFromServer() {
+        try {
+            if (socket != null && !socket.isClosed()) {
+                socket.close();
+                textArea.append("Sunucu bağlantısı kesildi.\n");
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Bağlantı kesilirken hata oluştu.", "Hata", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }

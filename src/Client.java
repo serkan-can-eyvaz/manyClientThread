@@ -12,6 +12,8 @@ public class Client extends JFrame {
     private JTextField ipField;
     private JTextField portField;
     private JTextField usernameField;
+    private JButton connectButton;
+    private JButton disconnectButton;
 
     public Client() {
         setTitle("Client");
@@ -32,15 +34,17 @@ public class Client extends JFrame {
         sendButton.addActionListener(e -> sendMessage());
         add(sendButton, BorderLayout.EAST);
 
-        JPanel connectionPanel = new JPanel(new GridLayout(3, 2)); // Satır sayısını artırdık
+        JPanel connectionPanel = new JPanel(new GridLayout(4, 2)); // Satır sayısını artırdık
         JLabel ipLabel = new JLabel("Server IP:");
         ipField = new JTextField("localhost");
         JLabel portLabel = new JLabel("Port:");
         portField = new JTextField("12345");
         JLabel usernameLabel = new JLabel("Username:");
         usernameField = new JTextField();
-        JButton connectButton = new JButton("Connect");
+        connectButton = new JButton("Connect");
         connectButton.addActionListener(e -> connectToServer());
+        disconnectButton = new JButton("Disconnect");
+        disconnectButton.addActionListener(e -> disconnectFromServer());
         connectionPanel.add(ipLabel);
         connectionPanel.add(ipField);
         connectionPanel.add(portLabel);
@@ -48,6 +52,7 @@ public class Client extends JFrame {
         connectionPanel.add(usernameLabel);
         connectionPanel.add(usernameField);
         connectionPanel.add(connectButton); // Connect butonunu panel'e ekle
+        connectionPanel.add(disconnectButton); // Disconnect butonunu panel'e ekle
         add(connectionPanel, BorderLayout.NORTH);
     }
 
@@ -70,22 +75,43 @@ public class Client extends JFrame {
     }
 
     private void connectToServer() {
-        String serverIP = ipField.getText();
-        int serverPort = Integer.parseInt(portField.getText());
-        String username = usernameField.getText();
+        boolean connected = false;
+        while (!connected) {
+            String serverIP = ipField.getText();
+            int serverPort = Integer.parseInt(portField.getText());
+            String username = usernameField.getText();
 
+            try {
+                socket = new Socket(serverIP, serverPort);
+                inputStream = new DataInputStream(socket.getInputStream());
+                outputStream = new DataOutputStream(socket.getOutputStream());
+
+                // Kullanıcı adını sunucuya gönder
+                outputStream.writeUTF(username);
+
+                ClientReadThread readThread = new ClientReadThread();
+                readThread.start();
+
+                connected = true; // Bağlantı başarılı, döngüden çık
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "Bağlantı hatası! Lütfen doğru bir IP adresi girin.", "Hata", JOptionPane.ERROR_MESSAGE);
+                String newIP = JOptionPane.showInputDialog(this, "Geçerli bir IP adresi girin:", serverIP);
+                if (newIP == null || newIP.isEmpty()) {
+                    return; // Kullanıcı iptal etti
+                }
+                ipField.setText(newIP); // Yeni IP adresini alanına yerleştir
+            }
+        }
+    }
+
+    private void disconnectFromServer() {
         try {
-            socket = new Socket(serverIP, serverPort);
-            inputStream = new DataInputStream(socket.getInputStream());
-            outputStream = new DataOutputStream(socket.getOutputStream());
-
-            // Kullanıcı adını sunucuya gönder
-            outputStream.writeUTF(username);
-
-            ClientReadThread readThread = new ClientReadThread();
-            readThread.start();
+            if (socket != null && !socket.isClosed()) {
+                socket.close();
+                textArea.append("Sunucu bağlantısı kesildi.\n");
+            }
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Bağlantı hatası! Sunucuya bağlanılamadı.", "Hata", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Bağlantı kesilirken hata oluştu.", "Hata", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }

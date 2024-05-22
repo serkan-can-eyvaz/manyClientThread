@@ -81,7 +81,7 @@ public class Server extends JFrame {
         });
     }
 
-    private class ClientHandler extends Thread {
+    private class ClientHandler extends Thread {//thread metodu ayrı sınıf yerine iç içe sınıf olarak ekledim
         private Socket socket;
         private DataInputStream inputStream;
         private DataOutputStream outputStream;
@@ -120,14 +120,12 @@ public class Server extends JFrame {
 
                     SwingUtilities.invokeLater(() -> {
                         usernameListModel.addElement(username);
-                        textArea.append(username + " sunucuya katıldı.\n");
                     });
                 }
                 broadcastMessage(username + " sunucuya katıldı.");
 
                 while (true) {
                     String message = inputStream.readUTF();
-                    textArea.append(username + ": " + message + "\n");
                     broadcastMessage(username + ": " + message);
                 }
             } catch (IOException e) {
@@ -137,7 +135,6 @@ public class Server extends JFrame {
                     synchronized (usernameListModel) {
                         SwingUtilities.invokeLater(() -> {
                             usernameListModel.removeElement(username);
-                            textArea.append(username + " sunucudan ayrıldı.\n");
                         });
                     }
                     broadcastMessage(username + " sunucudan ayrıldı.");
@@ -161,9 +158,9 @@ public class Server extends JFrame {
     }
 
     private void broadcastMessage(String message) {
+        SwingUtilities.invokeLater(() -> textArea.append(message + "\n"));
         for (ClientHandler client : clients) {
             client.sendMessage(message);
         }
-        SwingUtilities.invokeLater(() -> textArea.append(message + "\n"));
     }
 }
