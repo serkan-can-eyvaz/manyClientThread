@@ -152,7 +152,7 @@ public class Server extends JFrame {
                 outputStream.writeUTF(message);
                 outputStream.flush();
             } catch (IOException e) {
-                e.printStackTrace();
+                e.printStackTrace();,System.out.println();
             }
         }
     }

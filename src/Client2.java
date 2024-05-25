@@ -97,6 +97,7 @@ public class Client2 extends JFrame {
 
     private void disconnectFromServer() {
         try {
+
             if (socket != null && !socket.isClosed()) {
                 socket.close();
                 textArea.append("Sunucu bağlantısı kesildi.\n");
